@@ -1,0 +1,97 @@
+/* Administration app — calm, dark-first, zero distraction. The task IS the interface. */
+:root {
+  --bg: #14151a; --card: #1c1d24; --line: #2a2b33;
+  --ink: #ecebe6; --ink-soft: #b3b2ad; --ink-faint: #8f8e8a;
+  --accent: #7c8aec; --amber: #e0a857; --amber-ink: #221607;
+  --green: #58a184; --red: #d2706b;
+  --radius: 16px;
+}
+@media (prefers-color-scheme: light) {
+  :root { --bg: #f6f5f1; --card: #ffffff; --line: #e7e5dd; --ink: #1b1c28; --ink-soft: #4a4c5e; --ink-faint: #6b6d80; }
+}
+* { box-sizing: border-box; margin: 0; }
+body { background: var(--bg); color: var(--ink); font: 17px/1.55 -apple-system, "SF Pro Text", Segoe UI, Roboto, sans-serif; -webkit-font-smoothing: antialiased; }
+#app { max-width: 620px; margin: 0 auto; padding: 28px 18px 60px; min-height: 100vh; }
+h1 { font-size: 1.6rem; line-height: 1.25; margin: 6px 0 10px; }
+.eyebrow { font-size: .72rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-faint); }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px 20px; margin: 14px 0; }
+.muted { color: var(--ink-soft); } .small { font-size: .88rem; } .faint { color: var(--ink-faint); }
+.btn { display: block; width: 100%; border: none; border-radius: 999px; padding: 15px 22px; font: inherit; font-weight: 650; cursor: pointer; background: var(--amber); color: var(--amber-ink); margin-top: 14px; }
+.btn:disabled { opacity: .4; cursor: default; }
+.btn.ghost { background: transparent; color: var(--accent); border: 1.5px solid var(--line); }
+.btn.half { display: inline-block; width: 48%; }
+label.att { display: flex; gap: 10px; align-items: flex-start; margin-top: 10px; cursor: pointer; }
+label.att input { width: 18px; height: 18px; margin-top: 3px; }
+
+/* ---- task stage: one focused area, big targets, no chrome ---- */
+.stage { position: fixed; inset: 0; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; user-select: none; -webkit-user-select: none; touch-action: manipulation; }
+.stage .hint { position: fixed; top: max(18px, env(safe-area-inset-top)); left: 0; right: 0; text-align: center; font-size: .82rem; color: var(--ink-faint); }
+.stage .progress { position: fixed; bottom: max(18px, env(safe-area-inset-bottom)); left: 0; right: 0; text-align: center; font-size: .78rem; color: var(--ink-faint); font-variant-numeric: tabular-nums; }
+.bigstim { font-size: 5.2rem; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: .04em; }
+.arrows { font-size: 3.4rem; letter-spacing: .12em; font-weight: 700; }
+.fixation { font-size: 2.4rem; color: var(--ink-faint); }
+.pvt-wait { width: 130px; height: 130px; border-radius: 50%; border: 2px dashed var(--line); }
+.pvt-go { width: 130px; height: 130px; border-radius: 50%; background: var(--amber); }
+.tapzone { position: fixed; inset: 0; }
+.respond-row { display: flex; gap: 14px; margin-top: 34px; }
+.respond-row button { font: inherit; font-size: 1.5rem; font-weight: 700; padding: 18px 34px; border-radius: 16px; border: 1.5px solid var(--line); background: var(--card); color: var(--ink); cursor: pointer; }
+.respond-row button:active { background: var(--accent); color: #fff; }
+
+/* span grids */
+.symgrid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 3px; width: min(84vw, 360px); }
+.symgrid div { aspect-ratio: 1; border-radius: 3px; background: var(--line); }
+.symgrid div.on { background: var(--accent); }
+.recallgrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; width: min(78vw, 320px); }
+.recallgrid button { aspect-ratio: 1; border-radius: 10px; border: 1.5px solid var(--line); background: var(--card); font: inherit; font-weight: 700; color: var(--ink); cursor: pointer; }
+.recallgrid button.flash { background: var(--amber); border-color: var(--amber); }
+.recallgrid button.picked { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+/* ---- HUD / report ---- */
+.hud-row { display: flex; justify-content: space-between; align-items: baseline; padding: 12px 0; border-bottom: 1px solid var(--line); gap: 12px; }
+.hud-row:last-child { border-bottom: none; }
+.hud-score { font-size: 1.7rem; font-weight: 650; font-variant-numeric: tabular-nums; }
+.hud-invalid { color: var(--red); font-size: .84rem; }
+.hud-raw { color: var(--ink-faint); font-size: .8rem; }
+.limits { border-left: 3px solid var(--line); }
+.audit { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .74rem; color: var(--ink-faint); word-break: break-all; }
+.sittingrow { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--line); font-variant-numeric: tabular-nums; }
+.ok { color: var(--green); } .bad { color: var(--red); }
+
+/* ---- brand wordmark ---- */
+.wordmark { font-size: 2.4rem; font-weight: 800; letter-spacing: -.02em; color: var(--ink); margin: 4px 0 2px; }
+.wordmark.small-mark { font-size: 1.5rem; letter-spacing: 0; color: var(--accent); }
+.tagline { color: var(--ink-soft); font-size: 1.02rem; font-style: italic; margin: 0 0 14px; }
+.tagline.small { font-size: .9rem; margin: 4px 0 12px; }
+
+/* ---- capacity chips (home screen brand system) ---- */
+.capgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 16px 0; }
+.capchip { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; }
+.capchip.preview { border-style: dashed; opacity: .88; }
+.capname { font-weight: 650; font-size: .92rem; }
+.capstatus { display: block; font-size: .68rem; text-transform: uppercase; letter-spacing: .08em; color: var(--ink-faint); margin: 2px 0 6px; }
+.capchip.preview .capstatus { color: var(--accent); }
+.capblurb { font-size: .8rem; color: var(--ink-soft); line-height: 1.4; }
+@media (max-width: 480px) { .capgrid { grid-template-columns: 1fr; } }
+
+/* ---- reading-fidelity + decision-autonomy preview tasks ---- */
+.passagecard p { line-height: 1.7; }
+.sentenceverify { font-size: 1.15rem; line-height: 1.5; }
+.numentry { display: block; width: 100%; font: inherit; font-size: 1.4rem; font-variant-numeric: tabular-nums; padding: 14px 16px; border-radius: 12px; border: 1.5px solid var(--line); background: var(--card); color: var(--ink); margin-top: 12px; }
+.numentry:focus { outline: none; border-color: var(--accent); }
+/* Deliberately NO slider/range input anywhere (manual/015 §2, §6): a visible scale exposes a fixed
+   anchor near the truth that lets an examinee separate advice by geometry instead of judgment. */
+
+/* Preview report: the number must NEVER read like a real HUD score at a glance (Codex) — dashed
+   card, muted/outlined digits instead of solid ink, and an explicit "preview only" tag under it. */
+.previewcard { border-style: dashed; }
+.preview-score-wrap { text-align: right; }
+.preview-score { color: transparent; -webkit-text-stroke: 1.5px var(--ink-faint); font-weight: 700; }
+.preview-score-tag { font-size: .68rem; text-transform: uppercase; letter-spacing: .06em; color: var(--accent); margin-top: 2px; }
+
+/* Pre-commitment field (council 2026-07-04): matches the app surface, not browser default. */
+textarea { background: var(--card, #1c1d24); color: inherit; border: 1px solid var(--line, #33343d); border-radius: 10px; padding: 10px 12px; font: inherit; resize: vertical; }
+textarea:focus { outline: 2px solid var(--accent, #7b8cf0); outline-offset: 1px; }
+
+/* Roster buttons + print (manual/021) */
+.small-btn { padding: 6px 12px; font-size: 13px; width: auto; }
+@media print { .btn, .wordmark { display: none !important; } body { background: #fff; color: #111; } .card { border: 1px solid #ccc; box-shadow: none; } }
