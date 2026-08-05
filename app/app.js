@@ -1,11 +1,11 @@
 // app/app.js — the administration runner + HUD. All science lives in engine/ (pure, tested);
 // this file only renders forms, captures raw responses with honest timing, and displays records.
 // Timing: performance.now() for RTs; input via pointerdown + keydown (whichever fires first wins).
-import * as B from '../engine/battery.js?b=8';
-import * as Svt from '../engine/svt.js?b=8';
-import * as Dec from '../engine/decision.js?b=8';
-import { mulberry32 } from '../engine/prng.js?b=8';
-import { BRAND, TAGLINE, DESCRIPTOR, THESIS, CAPACITIES } from './brand.js?b=8';
+import * as B from '../engine/battery.js?b=9';
+import * as Svt from '../engine/svt.js?b=9';
+import * as Dec from '../engine/decision.js?b=9';
+import { mulberry32 } from '../engine/prng.js?b=9';
+import { BRAND, TAGLINE, DESCRIPTOR, THESIS, CAPACITIES } from './brand.js?b=9';
 
 const app = document.getElementById('app');
 const STORE = 'assess.sittings.v1';
@@ -70,11 +70,11 @@ function renderHome() {
     <div class="wordmark">${esc(BRAND)}</div>
     <p class="tagline">${esc(TAGLINE)}</p>
     <p class="muted">${esc(THESIS)}</p>
+    <button class="btn" id="begin">Begin →</button>
     <p class="eyebrow" style="margin-bottom:10px;">What this measures</p>
     <div class="capgrid">${shown.map(chip).join('')}</div>
     <div class="card limits"><p class="small muted">${esc(B.LIMITS_TEXT)}</p></div>
     <div class="card"><p class="eyebrow">What this costs you</p><p class="small muted" style="margin-top:4px;">About 12 minutes, in one go, with nothing else running. Parts of it are boring on purpose — the boredom is the measurement. There is no way to fail and no verdict at the end, only your own numbers.</p></div>
-    <button class="btn" id="begin">Begin →</button>
     ${PRACTITIONER ? `<button class="btn ghost" id="administer">Administered sitting (practitioner) →</button>` : ''}
     ${PRACTITIONER && loadSittings().some((r) => r.participant) ? `<button class="btn ghost" id="roster">Participant roster →</button>` : ''}
     ${PRACTITIONER ? `<button class="btn ghost" id="preview">Preview the next two instruments →</button>` : ''}

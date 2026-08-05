@@ -27,7 +27,7 @@ label.att input { width: 18px; height: 18px; margin-top: 3px; }
 .stage { position: fixed; inset: 0; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; user-select: none; -webkit-user-select: none; touch-action: manipulation; }
 .stage .hint { position: fixed; top: max(18px, env(safe-area-inset-top)); left: 0; right: 0; text-align: center; font-size: .82rem; color: var(--ink-faint); }
 .stage .progress { position: fixed; bottom: max(18px, env(safe-area-inset-bottom)); left: 0; right: 0; text-align: center; font-size: .78rem; color: var(--ink-faint); font-variant-numeric: tabular-nums; }
-.bigstim { font-size: 5.2rem; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: .04em; }
+.bigstim { font-family: ui-serif, Georgia, serif; font-size: 5.2rem; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: .04em; }
 .arrows { font-size: 3.4rem; letter-spacing: .12em; font-weight: 700; }
 .fixation { font-size: 2.4rem; color: var(--ink-faint); }
 .pvt-wait { width: 130px; height: 130px; border-radius: 50%; border: 2px dashed var(--line); }
@@ -49,7 +49,7 @@ label.att input { width: 18px; height: 18px; margin-top: 3px; }
 /* ---- HUD / report ---- */
 .hud-row { display: flex; justify-content: space-between; align-items: baseline; padding: 12px 0; border-bottom: 1px solid var(--line); gap: 12px; }
 .hud-row:last-child { border-bottom: none; }
-.hud-score { font-size: 1.7rem; font-weight: 650; font-variant-numeric: tabular-nums; }
+.hud-score { font-family: ui-serif, Georgia, serif; font-size: 1.7rem; font-weight: 650; font-variant-numeric: tabular-nums; }
 .hud-invalid { color: var(--red); font-size: .84rem; }
 .hud-raw { color: var(--ink-faint); font-size: .8rem; }
 .limits { border-left: 3px solid var(--line); }
@@ -58,14 +58,23 @@ label.att input { width: 18px; height: 18px; margin-top: 3px; }
 .ok { color: var(--green); } .bad { color: var(--red); }
 
 /* ---- brand wordmark ---- */
-.wordmark { font-size: 2.4rem; font-weight: 800; letter-spacing: -.02em; color: var(--ink); margin: 4px 0 2px; }
+/* The house signature (Forma lineage): SERIF for the mark and every measured value, system sans
+   for UI. ui-serif = New York on Apple, Georgia elsewhere — zero download, editorial register.
+   The ::after bar is a restrained "calibration mark", not a badge (design pass 2026-08-05). */
+.wordmark { font-family: ui-serif, Georgia, "Iowan Old Style", "Times New Roman", serif; font-size: 2.4rem; font-weight: 600; letter-spacing: 0; color: var(--ink); margin: 4px 0 2px; }
+.wordmark::after { content: ''; display: block; width: 34px; height: 2px; background: var(--accent); border-radius: 2px; margin: 10px 0 0; }
 .wordmark.small-mark { font-size: 1.5rem; letter-spacing: 0; color: var(--accent); }
+.wordmark.small-mark::after { display: none; }
 .tagline { color: var(--ink-soft); font-size: 1.02rem; font-style: italic; margin: 0 0 14px; }
 .tagline.small { font-size: .9rem; margin: 4px 0 12px; }
 
 /* ---- capacity chips (home screen brand system) ---- */
 .capgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 16px 0; }
-.capchip { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; }
+.capchip { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; border-top: 2px solid var(--accent); }
+/* per-instrument scan cue: four chips, four accents, so the grid reads as distinct instruments */
+.capgrid .capchip:nth-child(2) { border-top-color: var(--green); }
+.capgrid .capchip:nth-child(3) { border-top-color: var(--red); }
+.capgrid .capchip:nth-child(4) { border-top-color: var(--ink-faint); }
 .capchip.preview { border-style: dashed; opacity: .88; }
 .capname { font-weight: 650; font-size: .92rem; }
 .capstatus { display: block; font-size: .68rem; text-transform: uppercase; letter-spacing: .08em; color: var(--ink-faint); margin: 2px 0 6px; }
@@ -85,7 +94,7 @@ label.att input { width: 18px; height: 18px; margin-top: 3px; }
    card, muted/outlined digits instead of solid ink, and an explicit "preview only" tag under it. */
 .previewcard { border-style: dashed; }
 .preview-score-wrap { text-align: right; }
-.preview-score { color: transparent; -webkit-text-stroke: 1.5px var(--ink-faint); font-weight: 700; }
+.preview-score { font-family: ui-serif, Georgia, serif; color: transparent; -webkit-text-stroke: 1.5px var(--ink-faint); font-weight: 700; }
 .preview-score-tag { font-size: .68rem; text-transform: uppercase; letter-spacing: .06em; color: var(--accent); margin-top: 2px; }
 
 /* Pre-commitment field (council 2026-07-04): matches the app surface, not browser default. */
