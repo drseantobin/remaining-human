@@ -1,7 +1,7 @@
 # Remaining Human
 
-A standardized, unnormed research battery measuring four cognitive capacities: vigilant attention,
-executive attention, working memory, and sustained attention.
+A standardized, unnormed research battery measuring six capacities: vigilant attention, executive
+attention, working memory, reading fidelity, decision autonomy, and sustained attention.
 
 Everything runs in the browser. There is no account, no server, and no upload: every response stays
 in local storage on the device that produced it.

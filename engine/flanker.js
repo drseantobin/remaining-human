@@ -7,7 +7,19 @@
 //
 // Pure module: no DOM, no storage, no Date/now, no Math.random — all randomness injected.
 
-export const FLANKER_VERSION = 1;
+// v2 (2026-08-05, forma-validity P1): response-window TIMEOUTS enter the accuracy denominator.
+// v1 filtered them out of the scored set entirely, so a person who answered 45 of 64 trials — all
+// correctly — was scored 95 and TOLD "100% accurate". 40 correct with 24 timeouts scored 95 too,
+// identical to a flawless run. On an attention test, v1 made NOT ANSWERING strictly better than
+// answering wrong. Two accuracy statistics now exist because one number cannot serve both gates:
+//   accuracy          = correct / ADMINISTERED  — the scored vector; feeds RT_CREDIT_MIN_ACC.
+//   responseAccuracy  = correct / RT-BEARING    — feeds ACCURACY_FLOOR, whose stated rationale is
+//                                                 "near chance on a 2-choice task", which is only
+//                                                 true of trials the person actually answered.
+// Using the fixed denominator for BOTH would have converted a real, poor, interpretable run (40
+// answered at exactly the 0.60 chance floor) into an invalid one — refusing to score a legitimately
+// bad sitting, which flatters the instrument by deleting its worst scores.
+export const FLANKER_VERSION = 2;
 
 // Locked scoring constants (spec §3).
 export const ANTICIPATION_MS = 200;   // valid-trial floor: discrimination needs perceptual+decision time
@@ -109,12 +121,22 @@ const clamp01to100 = (x) => Math.max(0, Math.min(100, x));
 
 export function score(trials) {
   const all = Array.isArray(trials) ? trials.filter((t) => t && typeof t.correct === 'boolean') : [];
+  // RT-BEARING trials: a real response inside the discrimination window. Anticipations below
+  // ANTICIPATION_MS are guesses that landed, not discriminations, so they are not credited.
   const valid = all.filter((t) => typeof t.rt === 'number' && t.rt >= ANTICIPATION_MS && t.rt <= RESPONSE_WINDOW_MS);
   const n = valid.length;
-  if (n < MIN_VALID_TRIALS) return { score: null, invalid: true, reason: 'too-few-valid', valid: n };
+  const administered = all.length;
+  // Everything administered that produced no usable response: timeouts (rt null) and anticipations.
+  const omissions = administered - n;
+  // MIN_VALID_TRIALS protects the MEDIAN, so it counts RT-bearing trials. On the 64-trial blueprint
+  // it therefore doubles as the omission-rate ceiling, at 24/64 = 37.5% omitted. Stated here rather
+  // than left as an accident of two unrelated constants (forma-validity P1).
+  if (n < MIN_VALID_TRIALS) return { score: null, invalid: true, reason: 'too-few-valid', valid: n, administered, omissions };
   const correct = valid.filter((t) => t.correct);
-  const acc = correct.length / n;
-  if (acc < ACCURACY_FLOOR) return { score: null, invalid: true, reason: 'below-floor', valid: n, accuracy: acc };
+  // TWO denominators, each feeding the gate whose rationale it actually matches.
+  const acc = administered ? correct.length / administered : 0;   // scored vector
+  const responseAccuracy = correct.length / n;                    // "near chance" floor
+  if (responseAccuracy < ACCURACY_FLOOR) return { score: null, invalid: true, reason: 'below-floor', valid: n, administered, omissions, accuracy: acc, responseAccuracy };
   const accVec = acc * 5;
   let computed = accVec; // ≤ RT_CREDIT_MIN_ACC: speed earns no credit — fast-and-sloppy cannot win
   const medRT = median(correct.map((t) => t.rt));
@@ -130,7 +152,8 @@ export function score(trials) {
   const conflictCost = (congRT != null && incRT != null) ? Math.round(incRT - congRT) : null;
   return {
     score: clamp01to100(Math.round((computed / 10) * 100)),
-    invalid: false, valid: n, accuracy: acc,
+    invalid: false, valid: n, administered, omissions,
+    accuracy: acc, responseAccuracy,
     medianRT: medRT == null ? null : Math.round(medRT),
     congruentRT: congRT == null ? null : Math.round(congRT),
     incongruentRT: incRT == null ? null : Math.round(incRT),

@@ -60,8 +60,16 @@ export function score(trials) {
     if ((t.falseStart && t.miss) || (t.rt != null && (t.falseStart || t.miss)) || (t.rt == null && !t.falseStart && !t.miss)) {
       return { score: null, invalid: true, reason: 'corrupt-response' };
     }
-    // An rt beyond the response window contradicts the blueprint (beyond-window IS a miss).
-    if (t.rt != null && t.rt > RESPONSE_WINDOW_MS) return { score: null, invalid: true, reason: 'corrupt-response' };
+    // A SYMMETRIC range check. An rt outside [0, RESPONSE_WINDOW_MS] contradicts the blueprint:
+    // beyond the window IS a miss, and below zero is not a fast guess but a clock that ran
+    // backwards or a record that was edited — the runner computes rt from two performance.now()
+    // readings, which is monotonic within a document, so rt >= 0 holds for any honest sitting.
+    // Only the upper half of this check existed until 2026-08-05; a negative rt was silently
+    // absorbed into the falseStarts count, so 25 real reactions plus 5 impossible ones returned a
+    // score of 65 and charged the person 25 points for events that cannot happen. rt = 0 stays a
+    // legitimate anticipation (and therefore a false start) — the behavioural threshold is
+    // ANTICIPATION_MS and it is Basner's, not this gate's. (forma-validity P3.)
+    if (t.rt != null && (t.rt < 0 || t.rt > RESPONSE_WINDOW_MS)) return { score: null, invalid: true, reason: 'corrupt-response' };
   }
   // Anticipations: sub-100ms responses are guesses — excluded from RT stats, counted as false starts.
   const anticipations = list.filter((t) => typeof t.rt === 'number' && !t.falseStart && t.rt < ANTICIPATION_MS).length;

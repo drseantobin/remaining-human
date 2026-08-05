@@ -3,7 +3,12 @@
 // and the discrepancy is a bug. Pure: no DOM, no storage, no Date/Math.random — all randomness
 // comes from the injected PRNG so every form is reconstructable from (SPAN_VERSION, seed).
 
-export const SPAN_VERSION = 1;
+// v2 (2026-08-05, forma-validity P2): recall-vector validation + an all-empty non-participation
+// gate. v1 never inspected `recalled` at all, so a missing, null, empty, out-of-grid, non-numeric,
+// over-length or duplicate-bearing recall vector scored a confident 0 (or 13, or 32) with
+// invalid:false. A 0 is a claim about the person; a malformed vector is a claim about the record,
+// and rendering the second as the first is the fabrication CLAUDE.md exists to forbid.
+export const SPAN_VERSION = 2;
 
 // Blueprint constants (manual §2) — changing any of these is a spec-version bump.
 export const SET_SIZES = [2, 2, 3, 3, 4, 4, 5, 5]; // Foster et al. (2014) shortened form
@@ -68,6 +73,20 @@ function blueprintError(sets) {
   for (const s of sets) {
     const n = s.sequence.length;
     if (!Number.isInteger(s.symCorrect) || s.symCorrect < 0 || s.symCorrect > n) return true;
+    // §3.0b RECALL VECTOR (v2). The runner cannot emit any of these — `recall()` builds `picked`
+    // from a 16-button grid under `!picked.includes(k) && picked.length < set.sequence.length`, so
+    // duplicates, out-of-grid cells, non-integers and over-length vectors are all structurally
+    // unreachable from an honest sitting. This is a guard against a FUTURE runner (SCREENER_V1, the
+    // two new stations) and against whatever is in a stranger's localStorage when replay() runs.
+    // A SHORT vector, including an empty one, stays legitimate: a taker may tap fewer positions
+    // than the set length, or none, and that is real behaviour worth scoring.
+    if (!Array.isArray(s.recalled) || s.recalled.length > n) return true;
+    const seen = new Set();
+    for (const cell of s.recalled) {
+      if (!Number.isInteger(cell) || cell < 0 || cell >= RECALL_GRID_CELLS) return true;
+      if (seen.has(cell)) return true;
+      seen.add(cell);
+    }
   }
   return false;
 }
@@ -87,6 +106,17 @@ export function scoreSpan(sets) {
   const procAcc = symCorrect / totalSym;
   if (procAcc < PROCESSING_GATE) {
     return { score: null, invalid: true, reason: 'processing-gate', procAcc, pcu: null };
+  }
+
+  // §3.1b NON-PARTICIPATION (v2). Zero cells tapped across all eight recall screens, with the
+  // processing gate PASSED, is the span analogue of pvt.js's non-participation guard: a person who
+  // correctly judges ≥85% of 28 symmetry patterns and then taps nothing, eight times running, has
+  // declined the recall task — they have not demonstrated zero working-memory capacity, and
+  // scoring them 0 would be a claim the data does not carry. Deliberately the narrowest possible
+  // rule: tap ONE cell anywhere and you get a number, because a partial pattern is real behaviour.
+  // The pilot logs the base rate of this gate; if real takers trip it, the gate is wrong.
+  if (sets.reduce((a, s) => a + s.recalled.length, 0) === 0) {
+    return { score: null, invalid: true, reason: 'non-participation', procAcc, pcu: null };
   }
 
   // §3.2 Partial-Credit Unit: per-set proportion recalled in the correct serial position,
