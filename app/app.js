@@ -1,11 +1,11 @@
 // app/app.js — the administration runner + HUD. All science lives in engine/ (pure, tested);
 // this file only renders forms, captures raw responses with honest timing, and displays records.
 // Timing: performance.now() for RTs; input via pointerdown + keydown (whichever fires first wins).
-import * as B from '../engine/battery.js?b=7';
-import * as Svt from '../engine/svt.js?b=7';
-import * as Dec from '../engine/decision.js?b=7';
-import { mulberry32 } from '../engine/prng.js?b=7';
-import { BRAND, TAGLINE, DESCRIPTOR, THESIS, CAPACITIES } from './brand.js?b=7';
+import * as B from '../engine/battery.js?b=8';
+import * as Svt from '../engine/svt.js?b=8';
+import * as Dec from '../engine/decision.js?b=8';
+import { mulberry32 } from '../engine/prng.js?b=8';
+import { BRAND, TAGLINE, DESCRIPTOR, THESIS, CAPACITIES } from './brand.js?b=8';
 
 const app = document.getElementById('app');
 const STORE = 'assess.sittings.v1';
@@ -60,30 +60,31 @@ function renderHome() {
     const scores = r.order.map((n) => r.sections[n].invalid ? '—' : Number(r.sections[n].score)).join(' · ');
     return `<div class="sittingrow"><span class="small muted">${esc((r.timing && r.timing.completedAt || '').slice(0, 10))} · v${r.batteryVersion}</span><span class="small">${scores} ${r.incomplete ? '<span class="bad">(incomplete)</span>' : '<span class="ok">✓</span>'}</span></div>`;
   }).join('');
-  // First-time visitors don't know what a "battery" is and shouldn't have to. The four measured
-  // capacities carry no status label — the heading above already says these are what's measured.
-  // The two unratified ones say "coming soon", which is the honest minimum: they are not scored
-  // into a sitting and a taker must never believe they were. (Sean's call, 2026-07-25.)
-  const chip = (c) => `<div class="capchip ${c.status}"><span class="capname">${esc(c.name)}</span>${c.status === 'live' ? '' : '<span class="capstatus">coming soon</span>'}<p class="capblurb">${esc(c.blurb)}</p></div>`;
+  // "Build it or don't include it" (Sean, 2026-07-26): the public home shows ONLY finished,
+  // scored instruments — no "coming soon", no preview advertising. Unratified instruments are
+  // invisible to the public and live behind ?mode=practitioner for Sean's ratification workflow.
+  // When content is ratified they join CAPACITIES as status 'live' and appear here, finished.
+  const shown = PRACTITIONER ? CAPACITIES : CAPACITIES.filter((c) => c.status === 'live');
+  const chip = (c) => `<div class="capchip ${c.status}"><span class="capname">${esc(c.name)}</span>${c.status === 'live' ? '' : '<span class="capstatus">unratified — practitioner view</span>'}<p class="capblurb">${esc(c.blurb)}</p></div>`;
   app.innerHTML = `
     <div class="wordmark">${esc(BRAND)}</div>
     <p class="tagline">${esc(TAGLINE)}</p>
     <p class="muted">${esc(THESIS)}</p>
     <p class="eyebrow" style="margin-bottom:10px;">What this measures</p>
-    <div class="capgrid">${CAPACITIES.map(chip).join('')}</div>
+    <div class="capgrid">${shown.map(chip).join('')}</div>
     <div class="card limits"><p class="small muted">${esc(B.LIMITS_TEXT)}</p></div>
     <div class="card"><p class="eyebrow">What this costs you</p><p class="small muted" style="margin-top:4px;">About 12 minutes, in one go, with nothing else running. Parts of it are boring on purpose — the boredom is the measurement. There is no way to fail and no verdict at the end, only your own numbers.</p></div>
     <button class="btn" id="begin">Begin →</button>
     ${PRACTITIONER ? `<button class="btn ghost" id="administer">Administered sitting (practitioner) →</button>` : ''}
     ${PRACTITIONER && loadSittings().some((r) => r.participant) ? `<button class="btn ghost" id="roster">Participant roster →</button>` : ''}
-    <button class="btn ghost" id="preview">Preview the next two instruments →</button>
+    ${PRACTITIONER ? `<button class="btn ghost" id="preview">Preview the next two instruments →</button>` : ''}
     ${sittings.length ? `<div class="card"><p class="eyebrow" style="margin-bottom:6px;">Your sittings</p>${rows}</div>` : ''}
     <div class="card"><p class="eyebrow">Who this belongs to</p><p class="small muted" style="margin-top:4px;">${esc(COVENANT_OWNERSHIP)}</p><p class="small muted" style="margin-top:8px;">${esc(COVENANT_DATA)}</p></div>
     <p class="small faint" style="margin-top:18px;">Each sitting is reconstructable from its seed and re-scorable from your own saved answers — fully auditable, by you.</p>`;
   document.getElementById('begin').onclick = () => renderAttest();
   const adm = document.getElementById('administer'); if (adm) adm.onclick = () => renderAttest({ administered: true });
   const ros = document.getElementById('roster'); if (ros) ros.onclick = renderRoster;
-  document.getElementById('preview').onclick = renderPreviewMenu;
+  const prev = document.getElementById('preview'); if (prev) prev.onclick = renderPreviewMenu;
 }
 
 // ---------------- PREVIEW TRACK (walled) ----------------

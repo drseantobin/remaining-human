@@ -7,11 +7,14 @@
 // written characterisation of another company's mark does not belong in source a stranger can read.
 export const BRAND = 'Remaining Human';
 export const TAGLINE = 'Where is your mind right now?';
-export const DESCRIPTOR = 'A standardized measure of the human capacities that stay decisive as AI does more of the thinking — attention, memory, discernment, reading.';
+export const DESCRIPTOR = 'A standardized measure of the human capacities that stay decisive as AI does more of the thinking — vigilance, attention, memory, presence.';
 
 // The AI-era thesis, stated plainly. Shown on the home screen so the
 // product says what it's for, not just what it does.
-export const THESIS = 'As AI supplies more of the raw thinking, the advantage shifts to the capacities it can’t hand you: staying attentive, holding things in mind, reading with fidelity, and keeping your own judgment when a machine is confidently wrong. This measures those — the durable human capacities, not knowledge a search can replace.';
+// Enumerates ONLY what ships: PVT, flanker, span, SART. When reading fidelity and decision
+// autonomy are ratified into the battery, their clauses ("reading with fidelity," "keeping your
+// own judgment when a machine is confidently wrong") return here in the same edit that adds them.
+export const THESIS = 'As AI supplies more of the raw thinking, the advantage shifts to the capacities it can’t hand you: staying ready when nothing is happening, holding focus against distraction, keeping several things in mind at once, and staying present through monotony. This measures those — the durable human capacities, not knowledge a search can replace.';
 
 // The capacities measured here, ordered by how decisive each becomes as intelligence is offloaded
 // (manual/002). Each maps to one instrument. status 'live' = in the standardized battery today;
